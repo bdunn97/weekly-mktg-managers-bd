@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PR &amp; Social</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --ink: #17202e;
+  --muted: #5b6676;
+  --line: #dde1e8;
+  --fast: #0e7a6b;
+  --slow: #f0b34a;
+  --slow-ink: #7a4f06;
+  --accent-soft: #e3f2ef;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161f; --surface: #1a212d; --ink: #eef1f6; --muted: #9aa5b6;
+    --line: #2b3444; --fast: #3fc2ae; --slow: #e0a23c; --slow-ink: #f3c576;
+    --accent-soft: #16302d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161f; --surface: #1a212d; --ink: #eef1f6; --muted: #9aa5b6;
+  --line: #2b3444; --fast: #3fc2ae; --slow: #e0a23c; --slow-ink: #f3c576;
+  --accent-soft: #16302d; color-scheme: dark;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.55; font-size: 16px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding: 48px 20px 72px; }
+h1, h2, h3 { font-family: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif; line-height: 1.12; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 50px); font-weight: 700; max-width: 20ch; letter-spacing: -0.02em; }
+.lede { color: var(--muted); max-width: 60ch; margin: 16px 0 0; font-size: 18px; }
+h2 { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+
+.chart-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-top: 36px; padding: 22px 0 18px; }
+.chart-head { display: flex; flex-wrap: wrap; gap: 14px 28px; justify-content: space-between; align-items: center; padding: 0 22px 8px; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+.legend i { display: inline-block; width: 26px; height: 10px; border-radius: 3px; margin-right: 8px; vertical-align: middle; }
+.toggles { display: flex; flex-wrap: wrap; gap: 8px 24px; padding: 0 22px 14px; font-size: 15px; }
+.toggles label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.toggles input { width: 18px; height: 18px; accent-color: var(--fast); }
+.toggles span { color: var(--muted); font-size: 13px; }
+.scroll { overflow-x: auto; padding: 0 22px; }
+.gantt { min-width: 780px; }
+.row { display: grid; grid-template-columns: 220px 1fr; align-items: center; min-height: 52px; border-top: 1px solid var(--line); }
+.row.axis { border-top: 0; min-height: 28px; }
+.label { padding-right: 14px; font-weight: 600; font-size: 15px; line-height: 1.25; }
+.label small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
+.row.off .label { opacity: .5; }
+.row.off .track::after { content: "Not included"; position: absolute; left: 8px; top: 16px; font-size: 13px; color: var(--muted); opacity: .7; }
+.track { position: relative; height: 52px;
+  background-image: linear-gradient(to right, var(--line) 1px, transparent 1px);
+  background-size: calc(100% / 12) 100%; }
+.axis .track { height: 28px; background: none; }
+.tick { position: absolute; top: 4px; font-size: 12px; color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
+.bar { position: absolute; height: 12px; border-radius: 4px; }
+.bar.fast { background: var(--fast); top: 12px; }
+.bar.slow { background: var(--slow); top: 29px; }
+.mark { position: absolute; width: 14px; height: 14px; transform: translate(-50%, 0) rotate(45deg); border-radius: 2px; }
+.mark.fast { background: var(--fast); top: 11px; }
+.mark.slow { background: var(--slow); top: 28px; }
+.totals { display: grid; grid-template-columns: 220px 1fr; border-top: 2px solid var(--ink); margin-top: 2px; }
+.totals .label { padding-top: 14px; }
+.totals .vals { padding-top: 14px; display: flex; gap: 40px; flex-wrap: wrap; }
+.vals div { font-size: 14px; color: var(--muted); }
+.vals b { display: block; font-family: "Bricolage Grotesque", sans-serif; font-size: 26px; color: var(--ink); line-height: 1.1; }
+.vals .f b { color: var(--fast); }
+.vals .s b { color: var(--slow-ink); }
+.note { font-size: 13px; color: var(--muted); padding: 10px 22px 0; }
+
+.panel section { margin-top: 56px; }
+.steps { margin-top: 20px; border-top: 1px solid var(--line); }
+details { border-bottom: 1px solid var(--line); }
+summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 34px 1fr auto 20px; gap: 12px; align-items: center; padding: 16px 4px; font-weight: 600; }
+summary::-webkit-details-marker { display: none; }
+summary:focus-visible, .toggles input:focus-visible { outline: 3px solid var(--fast); outline-offset: 2px; border-radius: 6px; }
+.n { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--fast); display: grid; place-items: center; font-size: 14px; font-weight: 600; }
+.dur { font-weight: 500; color: var(--muted); font-size: 14px; text-align: right; }
+.chev { width: 9px; height: 9px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .15s; }
+details[open] .chev { transform: rotate(-135deg); }
+.body { padding: 0 4px 20px 46px; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.body h3 { font-size: 15px; margin-bottom: 6px; }
+.body ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; }
+.body li { margin-bottom: 4px; }
+
+.faster { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-top: 20px; }
+.tip { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--fast); border-radius: 8px; padding: 14px 16px; }
+.tip b { display: block; margin-bottom: 4px; }
+.tip span { color: var(--muted); font-size: 15px; }
+@media (max-width: 560px) {
+  .wrap { padding-top: 32px; }
+  .body { padding-left: 4px; }
+  summary { grid-template-columns: 30px 1fr 16px; }
+  .dur { grid-column: 2; grid-row: 2; text-align: left; }
+  .chev { grid-column: 3; grid-row: 1; }
+}
+@media print { details { break-inside: avoid; } }
+.topbar { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.topbar-in { max-width: 1040px; margin: 0 auto; padding: 14px 20px 0; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 28px; }
+.brand { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 18px; padding-bottom: 12px; letter-spacing: -0.01em; }
+.brand span { color: var(--fast); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: -1px; }
+.tabs > a, .tab-btn { display: flex; align-items: center; gap: 8px; background: none; border: 0; border-radius: 0; cursor: pointer; font-family: inherit; padding: 10px 14px 12px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 15px; white-space: nowrap; border-bottom: 3px solid transparent; }
+.tabs > a:hover, .tab-btn:hover { color: var(--ink); }
+.tabs [aria-current="page"] { color: var(--ink); border-bottom-color: var(--fast); }
+.tabs a:focus-visible, .tab-btn:focus-visible { outline: 3px solid var(--fast); outline-offset: -3px; border-radius: 6px; }
+.drop { position: relative; }
+.tab-btn::after { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform .15s; }
+.tab-btn[aria-expanded="true"]::after { transform: translateY(2px) rotate(-135deg); }
+.menu { position: absolute; top: 100%; left: 0; min-width: 210px; margin-top: 4px; padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(15, 23, 35, .14); display: grid; z-index: 20; }
+.menu[hidden] { display: none; }
+.menu a { padding: 9px 12px; border-radius: 6px; color: var(--ink); text-decoration: none; font-size: 15px; font-weight: 500; }
+.menu a:hover, .menu a:focus-visible { background: var(--accent-soft); outline: none; }
+.menu a[aria-current="true"] { color: var(--fast); font-weight: 600; }
+.eyebrow { display: block; color: var(--fast); font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 10px; }
+.brand-switch { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.brand-switch a { padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; background: var(--surface); }
+.brand-switch a[aria-current="true"] { background: var(--fast); border-color: var(--fast); color: #fff; }
+.panel .brand-update { margin-top: 44px; }
+.brand-update h2 { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.brand-update .empty { margin-top: 18px; padding: 28px 24px; }
+.panel[hidden], .brand-pane[hidden] { display: none; }
+.panel > section:first-of-type { margin-top: 56px; }
+.empty { margin-top: 36px; background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 40px 24px; text-align: center; color: var(--muted); }
+.empty b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 6px; }
+.empty ul { list-style: none; padding: 0; margin: 18px auto 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.empty li { background: var(--accent-soft); color: var(--fast); border-radius: 999px; padding: 4px 12px; font-size: 14px; font-weight: 500; }
+.dash-group { margin-top: 40px; }
+.dash-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.dash-head p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+.status { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slow-ink); background: color-mix(in srgb, var(--slow) 18%, transparent); border-radius: 999px; padding: 4px 12px; white-space: nowrap; }
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--slow); }
+.status.tbd { color: var(--muted); background: color-mix(in srgb, var(--muted) 14%, transparent); }
+.status.tbd::before { background: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 18px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.kpi span { display: block; color: var(--muted); font-size: 14px; font-weight: 500; }
+.kpi b { display: block; font-family: "Bricolage Grotesque", sans-serif; font-size: 30px; line-height: 1.15; margin-top: 6px; color: var(--muted); opacity: .6; }
+.kpi small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.dash-group .empty { margin-top: 14px; padding: 28px 24px; }
+@media print { .topbar { display: none; } .panel[hidden] { display: block; } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">PR <span>&amp;</span> Social</div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#updates">Updates</a>
+      <div class="drop" data-section="current">
+        <button type="button" class="tab-btn" aria-expanded="false" aria-haspopup="true" aria-controls="menu-current">Current Partnerships</button>
+        <div class="menu" id="menu-current" role="menu" hidden>
+          <a href="#current/newage" role="menuitem" data-brand="newage">NewAge Products</a>
+          <a href="#current/wilder" role="menuitem" data-brand="wilder">Wilder Home</a>
+          <a href="#current/rst" role="menuitem" data-brand="rst">RST</a>
+        </div>
+      </div>
+      <div class="drop" data-section="strategy">
+        <button type="button" class="tab-btn" aria-expanded="false" aria-haspopup="true" aria-controls="menu-strategy">Strategy</button>
+        <div class="menu" id="menu-strategy" role="menu" hidden>
+          <a href="#strategy/newage" role="menuitem" data-brand="newage">NewAge Products</a>
+          <a href="#strategy/wilder" role="menuitem" data-brand="wilder">Wilder Home</a>
+          <a href="#strategy/rst" role="menuitem" data-brand="rst">RST</a>
+        </div>
+      </div>
+      <a href="#timeline">Partnership Timeline</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  <div class="panel" id="dashboard" hidden>
+    <h1>Dashboard</h1>
+    <p class="lede" id="dash-lede">Organic social and PR performance at a glance. These numbers fill in automatically once the reporting platforms are connected.</p>
+    <nav class="brand-switch dash-filter" aria-label="Filter by brand"><a href="#dashboard" data-brand="all">All brands</a><a href="#dashboard/newage" data-brand="newage">NewAge Products</a><a href="#dashboard/wilder" data-brand="wilder">Wilder Home</a><a href="#dashboard/rst" data-brand="rst">RST</a></nav>
+
+    <section class="dash-group" aria-labelledby="dash-social-h">
+      <div class="dash-head">
+        <div><h2 id="dash-social-h">Organic social</h2><p>Source: Sprout Social</p></div>
+        <span class="status">Not connected yet</span>
+      </div>
+      <div class="kpis"><div class="kpi"><span>Audience</span><b>—</b><small>Total followers across channels</small></div><div class="kpi"><span>Impressions</span><b>—</b><small>Times posts were seen</small></div><div class="kpi"><span>Engagements</span><b>—</b><small>Likes, comments, shares, saves</small></div><div class="kpi"><span>Engagement rate</span><b>—</b><small>Engagements ÷ impressions</small></div></div>
+      <div class="empty"><b>Top posts and trends will appear here</b>Once Sprout Social is connected, this area shows performance over time and the best-performing posts.
+        <ul><li>Instagram</li><li>TikTok</li><li>Facebook</li><li>Pinterest</li><li>LinkedIn</li></ul></div>
+    </section>
+
+    <section class="dash-group" aria-labelledby="dash-pr-h">
+      <div class="dash-head">
+        <div><h2 id="dash-pr-h">PR coverage</h2><p>Source: platform to be decided</p></div>
+        <span class="status tbd">Platform not chosen</span>
+      </div>
+      <div class="kpis"><div class="kpi"><span>Earned placements</span><b>—</b><small>Articles and mentions</small></div><div class="kpi"><span>Potential reach</span><b>—</b><small>Combined outlet audience</small></div><div class="kpi"><span>Share of voice</span><b>—</b><small>Versus competitors</small></div><div class="kpi"><span>Sentiment</span><b>—</b><small>Positive, neutral, negative</small></div></div>
+      <div class="empty"><b>Recent coverage will appear here</b>Once a PR platform is chosen and connected, this area lists the latest earned media.
+        <ul><li>Outlet</li><li>Headline</li><li>Date</li><li>Reach</li></ul></div>
+    </section>
+  </div>
+
+  <div class="panel" id="updates" hidden>
+    <h1>Updates</h1>
+    <p class="lede">The latest PR and social news for each brand: wins, changes, and what's coming up next.</p>
+    <section class="brand-update" id="updates-newage" aria-labelledby="updates-newage-h">
+      <h2 id="updates-newage-h">NewAge Products</h2>
+      <div class="empty"><b>No NewAge Products updates yet</b>The latest NewAge Products news will appear here.
+        <ul><li>Weekly highlights</li><li>New partners signed</li><li>Content that went live</li></ul></div>
+    </section>
+    <section class="brand-update" id="updates-wilder" aria-labelledby="updates-wilder-h">
+      <h2 id="updates-wilder-h">Wilder Home</h2>
+      <div class="empty"><b>No Wilder Home updates yet</b>The latest Wilder Home news will appear here.
+        <ul><li>Weekly highlights</li><li>New partners signed</li><li>Content that went live</li></ul></div>
+    </section>
+    <section class="brand-update" id="updates-rst" aria-labelledby="updates-rst-h">
+      <h2 id="updates-rst-h">RST</h2>
+      <div class="empty"><b>No RST updates yet</b>The latest RST news will appear here.
+        <ul><li>Weekly highlights</li><li>New partners signed</li><li>Content that went live</li></ul></div>
+    </section>
+  </div>
+
+  <div class="panel" id="current" hidden>
+    <div class="brand-pane" data-brand="newage" hidden>
+      <span class="eyebrow">Current Partnerships</span>
+      <h1>NewAge Products</h1>
+      <p class="lede">Every active NewAge Products creator partnership, where it stands in the timeline, and when content is due.</p>
+      <nav class="brand-switch" aria-label="Brands"><a href="#current/newage" data-brand="newage">NewAge Products</a><a href="#current/wilder" data-brand="wilder">Wilder Home</a><a href="#current/rst" data-brand="rst">RST</a></nav>
+      <div class="empty"><b>No NewAge Products partnerships listed yet</b>Active NewAge Products partnerships will appear here.
+        <ul><li>Creator</li><li>Stage</li><li>Deliverables</li><li>Due date</li></ul></div>
+    </div>
+    <div class="brand-pane" data-brand="wilder" hidden>
+      <span class="eyebrow">Current Partnerships</span>
+      <h1>Wilder Home</h1>
+      <p class="lede">Every active Wilder Home creator partnership, where it stands in the timeline, and when content is due.</p>
+      <nav class="brand-switch" aria-label="Brands"><a href="#current/newage" data-brand="newage">NewAge Products</a><a href="#current/wilder" data-brand="wilder">Wilder Home</a><a href="#current/rst" data-brand="rst">RST</a></nav>
+      <div class="empty"><b>No Wilder Home partnerships listed yet</b>Active Wilder Home partnerships will appear here.
+        <ul><li>Creator</li><li>Stage</li><li>Deliverables</li><li>Due date</li></ul></div>
+    </div>
+    <div class="brand-pane" data-brand="rst" hidden>
+      <span class="eyebrow">Current Partnerships</span>
+      <h1>RST</h1>
+      <p class="lede">Every active RST creator partnership, where it stands in the timeline, and when content is due.</p>
+      <nav class="brand-switch" aria-label="Brands"><a href="#current/newage" data-brand="newage">NewAge Products</a><a href="#current/wilder" data-brand="wilder">Wilder Home</a><a href="#current/rst" data-brand="rst">RST</a></nav>
+      <div class="empty"><b>No RST partnerships listed yet</b>Active RST partnerships will appear here.
+        <ul><li>Creator</li><li>Stage</li><li>Deliverables</li><li>Due date</li></ul></div>
+    </div>
+  </div>
+
+  <div class="panel" id="strategy" hidden>
+    <div class="brand-pane" data-brand="newage" hidden>
+      <span class="eyebrow">Strategy</span>
+      <h1>NewAge Products</h1>
+      <p class="lede">Goals, target creators, budget, and the approach behind the NewAge Products creator partnership program.</p>
+      <nav class="brand-switch" aria-label="Brands"><a href="#strategy/newage" data-brand="newage">NewAge Products</a><a href="#strategy/wilder" data-brand="wilder">Wilder Home</a><a href="#strategy/rst" data-brand="rst">RST</a></nav>
+      <div class="empty"><b>NewAge Products strategy coming soon</b>The NewAge Products partnership strategy will appear here.
+        <ul><li>Goals</li><li>Target creators</li><li>Budget</li><li>Measurement</li></ul></div>
+    </div>
+    <div class="brand-pane" data-brand="wilder" hidden>
+      <span class="eyebrow">Strategy</span>
+      <h1>Wilder Home</h1>
+      <p class="lede">Goals, target creators, budget, and the approach behind the Wilder Home creator partnership program.</p>
+      <nav class="brand-switch" aria-label="Brands"><a href="#strategy/newage" data-brand="newage">NewAge Products</a><a href="#strategy/wilder" data-brand="wilder">Wilder Home</a><a href="#strategy/rst" data-brand="rst">RST</a></nav>
+      <div class="empty"><b>Wilder Home strategy coming soon</b>The Wilder Home partnership strategy will appear here.
+        <ul><li>Goals</li><li>Target creators</li><li>Budget</li><li>Measurement</li></ul></div>
+    </div>
+    <div class="brand-pane" data-brand="rst" hidden>
+      <span class="eyebrow">Strategy</span>
+      <h1>RST</h1>
+      <p class="lede">Goals, target creators, budget, and the approach behind the RST creator partnership program.</p>
+      <nav class="brand-switch" aria-label="Brands"><a href="#strategy/newage" data-brand="newage">NewAge Products</a><a href="#strategy/wilder" data-brand="wilder">Wilder Home</a><a href="#strategy/rst" data-brand="rst">RST</a></nav>
+      <div class="empty"><b>RST strategy coming soon</b>The RST partnership strategy will appear here.
+        <ul><li>Goals</li><li>Target creators</li><li>Budget</li><li>Measurement</li></ul></div>
+    </div>
+  </div>
+
+  <div class="panel" id="timeline" hidden>
+  <h1 id="headline">Creator content partnerships take 5½ to 10½ weeks</h1>
+  <p class="lede">From the first search for creators to approved, final content in hand: a realistic timeline for each stage, what happens in it, and where time is usually lost.</p>
+
+  <div class="chart-card">
+    <div class="chart-head">
+      <h2>The full timeline</h2>
+      <div class="legend">
+        <span><i style="background:var(--fast)"></i>Fast case</span>
+        <span><i style="background:var(--slow)"></i>Slow case</span>
+      </div>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="t-round2"> Second round of sourcing and outreach <span>+2–4 days</span></label>
+      <label><input type="checkbox" id="t-place"> Product placement call <span>+3–7 days</span></label>
+    </div>
+    <div class="scroll"><div class="gantt" id="gantt" role="img"></div></div>
+    <p class="note">Stages run one after another, except creator briefing, which runs alongside shipping and adds no time. Switch on the optional stages to see how they change the total. Weeks are counted from day 0, the start of creator sourcing.</p>
+  </div>
+
+  <section>
+    <h2>What happens at each stage</h2>
+    <div class="steps" id="steps"></div>
+  </section>
+  </div>
+</main>
+
+<script>
+// Durations are in days: [fast, slow]
+const steps = [
+  { id: "source", name: "List building and sourcing", dur: [1, 3], label: "1–3 days",
+    does: ["Search organically for creators whose audience and content fit your brand and product", "Check engagement rate, audience quality, content style, and any past brand work", "Log each creator, their contact, and a rough rate in a shared tracker"],
+    tips: ["Build a list 2–3 times larger than the number of partners you need", "Look for creators already talking about your category", "Skip creators with sudden follower spikes or low engagement"] },
+  { id: "outreach", name: "Outreach", dur: [1, 1], label: "1 day",
+    does: ["Send personalized emails or DMs with a short pitch, the product, and the kind of partnership you have in mind", "Ask for a rate card and availability", "Follow up after 3–4 days if you hear nothing"],
+    tips: ["Sending takes a day, but replies arrive during negotiations", "Reference a specific piece of their content", "Use a creator's business email where one is listed"] },
+  { id: "negotiate", name: "Negotiations", dur: [7, 14], label: "1–2 weeks",
+    does: ["Agree on deliverables, number of posts, platforms, and rates", "Settle usage rights, exclusivity, and whether content can be used in paid ads", "Confirm posting dates and approval steps"],
+    tips: ["Waiting on replies is the main source of delay, especially when a manager or agency is involved", "Decide your budget range and non-negotiables before you start", "Offer a clear timeline up front"] },
+  { id: "round2", name: "Second round of sourcing and outreach", dur: [2, 4], label: "2–4 days, if needed", optional: "t-round2",
+    does: ["Triggered when creators drop out, go quiet, or can't work within budget", "Run the same sourcing and outreach steps with a fresh list", "Keep talking to remaining creators so a second round doesn't pause the first"],
+    tips: ["Set a cutoff, such as a number of days without a reply, before moving on", "Keep a backup list from round one so outreach can start right away", "Revisit the budget or offer if several creators decline for the same reason"] },
+  { id: "contract", name: "Contracting", dur: [1, 5], label: "1–5 days",
+    does: ["Put the agreed terms in writing and get signatures", "Include deliverables, deadlines, usage term, exclusivity, payment schedule, and disclosure requirements (such as #ad)", "Handle any contract-specific questions or redlines"],
+    tips: ["Legal review is the usual cause of the longer end", "Define the number of revision rounds here", "Add a clause covering late or missing content"] },
+  { id: "place", name: "Product placement", dur: [3, 7], label: "3–7 days, some brands only", optional: "t-place",
+    does: ["The creator schedules a call with the product team to talk through their space and needs", "The product team recommends the pieces that will work best", "Confirm the final selection, sizes, and options before anything ships"],
+    tips: ["Needed only for products that depend on the creator's space; straightforward product lines skip this stage", "Share the creator's availability with the product team early", "Confirm the selection in writing so shipping isn't held up"] },
+  { id: "ship", name: "Ship product", dur: [14, 28], label: "2–4 weeks",
+    does: ["Collect shipping details and send the product", "Track delivery and confirm the creator received it", "Include any brand notes, talking points, or packaging inserts"],
+    tips: ["Ship as soon as the contract is signed", "Send tracking details to the creator right away", "Send a spare unit if the product is fragile or limited"] },
+  { id: "brief", name: "Creator briefing", dur: [3, 3], label: "Adds no time", concurrent: true,
+    does: ["Send the creative brief: key messages, must-haves, things to avoid, deliverables, and deadlines", "Hold a call to walk through the partnership expectations and answer any questions", "Confirm posting dates, approval steps, and disclosure requirements"],
+    tips: ["Runs alongside shipping, so it adds no time to the total", "Send the brief before the call so the creator can come with questions", "Follow up in writing with a recap of anything agreed on the call"] },
+  { id: "create", name: "Content creation", dur: [7, 14], label: "1–2 weeks",
+    does: ["The creator tests the product and films or photographs the content", "The creator works from the creative brief and notes from the walkthrough call", "Review a draft or rough cut where your agreement allows"],
+    tips: ["Give creators room to use their own voice", "Ask for a script or outline before filming", "Check in once mid-way, not daily"] },
+  { id: "revise", name: "Revisions", dur: [7, 7], label: "1 week",
+    does: ["Send consolidated feedback in one round", "Creator edits and resubmits", "Confirm compliance with the brief, claims, and disclosure rules"],
+    tips: ["Limit revisions to the rounds in the contract", "Separate must-fix items from preferences", "Approve in writing so there is a clear record"] },
+  { id: "final", name: "Final content delivery", dur: [0, 0], label: "Done", milestone: true,
+    does: ["Receive approved final files and the posting schedule", "Collect links and file formats you are licensed to use", "Release payment according to the contract"],
+    tips: ["Confirm the post goes live on the agreed date", "Save raw and final files if you hold usage rights", "Note what worked for the next round"] }
+];
+
+const AXIS_DAYS = 84; // 12 weeks
+const pct = d => (d / AXIS_DAYS * 100).toFixed(3) + "%";
+const half = d => { const w = Math.round(d / 7 * 2) / 2; return (Math.floor(w) ? Math.floor(w) : "") + (w % 1 ? "½" : "") || "0"; };
+const on = s => !s.optional || document.getElementById(s.optional).checked;
+
+function layout() {
+  let cur = [0, 0], shipStart = [0, 0];
+  const out = steps.map(s => {
+    const r = { s, included: on(s) };
+    if (!r.included) return r;
+    if (s.id === "ship") shipStart = cur.slice();
+    if (s.concurrent) {
+      r.start = shipStart.slice();
+      r.end = [shipStart[0] + s.dur[0], shipStart[1] + s.dur[1]];
+    } else {
+      r.start = cur.slice();
+      r.end = [cur[0] + s.dur[0], cur[1] + s.dur[1]];
+      cur = r.end.slice();
+    }
+    return r;
+  });
+  return { rows: out, total: cur };
+}
+
+function render() {
+  const { rows, total } = layout();
+  document.getElementById("headline").textContent = `Creator content partnerships take ${half(total[0])} to ${half(total[1])} weeks`;
+  const g = document.getElementById("gantt");
+  g.setAttribute("aria-label", `Gantt chart of the creator partnership timeline. Fast case totals ${total[0]} days, slow case ${total[1]} days.`);
+  let html = '<div class="row axis"><div></div><div class="track">';
+  for (let w = 0; w <= 12; w++) html += `<span class="tick" style="left:${pct(w * 7)}">${w === 0 ? "Start" : "Wk " + w}</span>`;
+  html += "</div></div>";
+  rows.forEach(r => {
+    const s = r.s;
+    html += `<div class="row${r.included ? "" : " off"}"><div class="label">${s.name}<small>${s.label}</small></div><div class="track">`;
+    if (r.included) {
+      if (s.milestone) {
+        html += `<span class="mark fast" style="left:${pct(r.start[0])}"></span><span class="mark slow" style="left:${pct(r.start[1])}"></span>`;
+      } else {
+        html += `<span class="bar fast" style="left:${pct(r.start[0])};width:${pct(r.end[0] - r.start[0])}"></span>`;
+        html += `<span class="bar slow" style="left:${pct(r.start[1])};width:${pct(r.end[1] - r.start[1])}"></span>`;
+      }
+    }
+    html += "</div></div>";
+  });
+  html += `<div class="totals"><div class="label">Total before receiving content</div><div class="vals">
+    <div class="f"><b>${total[0]} days</b>fast case, about ${half(total[0])} weeks</div>
+    <div class="s"><b>${total[1]} days</b>slow case, about ${half(total[1])} weeks</div></div></div>`;
+  g.innerHTML = html;
+}
+
+document.getElementById("steps").innerHTML = steps.map((s, i) => `
+<details${i === 0 ? " open" : ""}>
+  <summary><span class="n">${i + 1}</span><span>${s.name}</span><span class="dur">${s.label}</span><span class="chev"></span></summary>
+  <div class="body">
+    <div><h3>What happens</h3><ul>${s.does.map(x => `<li>${x}</li>`).join("")}</ul></div>
+    <div><h3>Watch for</h3><ul>${s.tips.map(x => `<li>${x}</li>`).join("")}</ul></div>
+  </div>
+</details>`).join("");
+
+document.querySelectorAll(".toggles input").forEach(el => el.addEventListener("change", render));
+render();
+
+const BRANDS = ["newage", "wilder", "rst"];
+const SECTIONS = ["dashboard", "updates", "current", "strategy", "timeline"];
+const drops = [...document.querySelectorAll(".drop")];
+
+function closeMenus(except) {
+  drops.forEach(d => {
+    if (d === except) return;
+    d.querySelector(".tab-btn").setAttribute("aria-expanded", "false");
+    d.querySelector(".menu").hidden = true;
+  });
+}
+drops.forEach(d => {
+  const btn = d.querySelector(".tab-btn"), menu = d.querySelector(".menu");
+  btn.addEventListener("click", () => {
+    const open = btn.getAttribute("aria-expanded") !== "true";
+    closeMenus(d);
+    btn.setAttribute("aria-expanded", String(open));
+    menu.hidden = !open;
+    if (open) menu.querySelector("a").focus();
+  });
+  menu.addEventListener("keydown", e => {
+    const items = [...menu.querySelectorAll("a")], i = items.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+  });
+});
+document.addEventListener("click", e => { if (!e.target.closest(".drop")) closeMenus(); });
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  const d = document.activeElement && document.activeElement.closest(".drop");
+  closeMenus();
+  if (d) d.querySelector(".tab-btn").focus();
+});
+
+function showTab() {
+  let [section, brand] = location.hash.slice(1).split("/");
+  if (!SECTIONS.includes(section)) section = "dashboard";
+  const branded = section === "current" || section === "strategy";
+  if (branded && !BRANDS.includes(brand)) brand = BRANDS[0];
+  document.querySelectorAll(".panel").forEach(p => p.hidden = p.id !== section);
+  if (branded) {
+    document.querySelectorAll(`#${section} .brand-pane`).forEach(p => p.hidden = p.dataset.brand !== brand);
+    document.querySelectorAll(`#${section} .brand-switch a`).forEach(a => a.dataset.brand === brand ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"));
+  }
+  if (section === "dashboard") {
+    const b = BRANDS.includes(brand) ? brand : "all";
+    document.querySelectorAll(".dash-filter a").forEach(a => a.dataset.brand === b ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"));
+    const name = b === "all" ? "" : document.querySelector(`.dash-filter a[data-brand="${b}"]`).textContent;
+    document.getElementById("dash-lede").textContent = (name ? `${name} organic social and PR performance at a glance.` : "Organic social and PR performance at a glance, across all brands.") + " These numbers fill in automatically once the reporting platforms are connected.";
+  }
+  document.querySelectorAll(".tabs > a").forEach(a => a.hash === "#" + section ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  drops.forEach(d => {
+    const active = d.dataset.section === section;
+    const btn = d.querySelector(".tab-btn");
+    active ? btn.setAttribute("aria-current", "page") : btn.removeAttribute("aria-current");
+    d.querySelectorAll(".menu a").forEach(a => active && a.dataset.brand === brand ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"));
+  });
+  closeMenus();
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", showTab);
+showTab();
+</script>
+</body>
+</html>
