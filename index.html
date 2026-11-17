@@ -153,6 +153,23 @@ details[open] .chev { transform: rotate(-135deg); }
 .kpi b { display: block; font-family: "Bricolage Grotesque", sans-serif; font-size: 30px; line-height: 1.15; margin-top: 6px; color: var(--muted); opacity: .6; }
 .kpi small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
 .dash-group .empty { margin-top: 14px; padding: 28px 24px; }
+/* Weekly updates (built from updates/*.md) */
+.week-brand { margin-top: 28px; }
+.week-brand h3 { font-size: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.week-brand .empty, .dash-group .week-brand .empty { margin-top: 14px; padding: 18px 24px; }
+.week-brand .empty b { margin-bottom: 0; font-size: 15px; font-weight: 600; color: var(--muted); }
+.update-groups { display: grid; gap: 14px 28px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 14px; }
+.update-groups h4 { font-family: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif; font-size: 15px; margin: 0 0 6px; }
+.update-groups ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; }
+.update-groups li { margin-bottom: 4px; }
+.update-groups ul ul { margin-top: 4px; }
+.week-brand a, .week-intro a { color: var(--fast); }
+.week-intro { color: var(--muted); margin: 14px 0 0; }
+#archive .steps { margin-top: 0; border-top: 0; }
+#archive > .empty { margin-top: 14px; padding: 28px 24px; }
+.week-body { padding: 0 4px 24px 46px; }
+.week-body > :first-child { margin-top: 4px; }
+@media (max-width: 560px) { .week-body { padding-left: 4px; } }
 @media print { .topbar { display: none; } .panel[hidden] { display: block; } }
 </style>
 </head>
@@ -212,21 +229,18 @@ details[open] .chev { transform: rotate(-135deg); }
 
   <div class="panel" id="updates" hidden>
     <h1>Updates</h1>
-    <p class="lede">The latest PR and social news for each brand: wins, changes, and what's coming up next.</p>
-    <section class="brand-update" id="updates-newage" aria-labelledby="updates-newage-h">
-      <h2 id="updates-newage-h">NewAge Products</h2>
-      <div class="empty"><b>No NewAge Products updates yet</b>The latest NewAge Products news will appear here.
-        <ul><li>Weekly highlights</li><li>New partners signed</li><li>Content that went live</li></ul></div>
+    <p class="lede">This week's PR and social news for each brand, with past weeks archived below.</p>
+    <section class="dash-group" aria-labelledby="this-week-h">
+      <div class="dash-head">
+        <div><h2 id="this-week-h">This week</h2><p id="this-week-date">Loading the latest update…</p></div>
+      </div>
+      <div id="this-week-body"></div>
     </section>
-    <section class="brand-update" id="updates-wilder" aria-labelledby="updates-wilder-h">
-      <h2 id="updates-wilder-h">Wilder Home</h2>
-      <div class="empty"><b>No Wilder Home updates yet</b>The latest Wilder Home news will appear here.
-        <ul><li>Weekly highlights</li><li>New partners signed</li><li>Content that went live</li></ul></div>
-    </section>
-    <section class="brand-update" id="updates-rst" aria-labelledby="updates-rst-h">
-      <h2 id="updates-rst-h">RST</h2>
-      <div class="empty"><b>No RST updates yet</b>The latest RST news will appear here.
-        <ul><li>Weekly highlights</li><li>New partners signed</li><li>Content that went live</li></ul></div>
+    <section class="dash-group" aria-labelledby="past-weeks-h">
+      <div class="dash-head">
+        <div><h2 id="past-weeks-h">Past weeks</h2><p>Newest first. Each week moves here when the next one is added.</p></div>
+      </div>
+      <div id="archive"></div>
     </section>
   </div>
 
@@ -412,6 +426,97 @@ document.getElementById("steps").innerHTML = steps.map((s, i) => `
 document.querySelectorAll(".toggles input").forEach(el => el.addEventListener("change", render));
 render();
 
+// ---- Weekly updates ----
+// Each week is a Markdown file in updates/, listed in updates/index.json.
+// "## Brand" starts a brand, "### Heading" a group, "- item" a line in it.
+// On the Updates tab, the newest week shows under "This week"; every older week goes under "Past weeks".
+let WEEKS = null, loadError = false;
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const inline = s => esc(s)
+  .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+  .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+const fmtDate = d => new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+function parseWeek(text, date) {
+  const week = { date, intro: [], brands: [] };
+  let brand = null, group = null, m;
+  text.replace(/\r/g, "").split("\n").forEach(raw => {
+    const line = raw.trim();
+    if (!line || line.startsWith("<!--")) return;
+    if ((m = line.match(/^###\s+(.+)/))) {
+      if (brand) { group = { title: m[1].trim(), items: [] }; brand.groups.push(group); }
+      return;
+    }
+    if ((m = line.match(/^##\s+(.+)/))) { brand = { name: m[1].trim(), groups: [] }; group = null; week.brands.push(brand); return; }
+    if (/^#\s/.test(line)) return; // page title; the date comes from the file name
+    const isBullet = /^[-*]\s+/.test(line), text = line.replace(/^[-*]\s+/, "");
+    if (!brand) { week.intro.push(text); return; }
+    if (!group) { group = { title: "", items: [], stack: [] }; brand.groups.push(group); }
+    // Indent sub-bullets by 2 spaces per level to nest them under the bullet above
+    const level = isBullet ? Math.floor(raw.match(/^\s*/)[0].replace(/\t/g, "  ").length / 2) : 0;
+    const node = { text, children: [] }, stack = group.stack || (group.stack = []);
+    while (stack.length && stack[stack.length - 1].level >= level) stack.pop();
+    (stack.length ? stack[stack.length - 1].node.children : group.items).push(node);
+    stack.push({ level, node });
+  });
+  week.brands.forEach(b => b.groups = b.groups.filter(g => g.items.length));
+  return week;
+}
+
+const listHTML = items => `<ul>${items.map(i => `<li>${inline(i.text)}${i.children.length ? listHTML(i.children) : ""}</li>`).join("")}</ul>`;
+const isGeneral = b => b.name.toLowerCase() === "general";
+function brandHTML(b) {
+  const body = b.groups.length
+    ? `<div class="update-groups">${b.groups.map(g => `<div>${g.title ? `<h4>${inline(g.title)}</h4>` : ""}${listHTML(g.items)}</div>`).join("")}</div>`
+    : `<div class="empty"><b>No updates this week</b></div>`;
+  return `<section class="week-brand"><h3>${inline(b.name)}</h3>${body}</section>`;
+}
+const introHTML = w => w.intro.map(p => `<p class="week-intro">${inline(p)}</p>`).join("");
+const LOAD_FAIL = `<div class="empty"><b>Weekly updates couldn't load</b>Open the site from Netlify or the local preview; opening index.html straight from a folder can't load the update files.</div>`;
+
+function renderThisWeek() {
+  const date = document.getElementById("this-week-date"), body = document.getElementById("this-week-body");
+  if (loadError) { date.textContent = ""; body.innerHTML = LOAD_FAIL; return; }
+  if (!WEEKS) return;
+  if (!WEEKS.length) { date.textContent = ""; body.innerHTML = `<div class="empty"><b>No weekly updates yet</b>The first weekly update will appear here.</div>`; return; }
+  const w = WEEKS[0];
+  date.textContent = "Week of " + fmtDate(w.date);
+  body.innerHTML = introHTML(w) + w.brands.map(brandHTML).join("");
+}
+
+function renderArchive() {
+  const el = document.getElementById("archive");
+  if (loadError) { el.innerHTML = LOAD_FAIL; return; }
+  const past = WEEKS.slice(1);
+  if (!past.length) { el.innerHTML = `<div class="empty"><b>No past weeks yet</b>When next week's update is added, this week moves here automatically.</div>`; return; }
+  el.innerHTML = `<div class="steps">${past.map((w, i) => {
+    const brands = w.brands.filter(b => !isGeneral(b)), updated = brands.filter(b => b.groups.length).length;
+    return `<details${i === 0 ? " open" : ""}>
+  <summary><span class="n">${WEEKS.length - 1 - i}</span><span>Week of ${fmtDate(w.date)}</span><span class="dur">${updated} of ${brands.length} brands updated</span><span class="chev"></span></summary>
+  <div class="week-body">${introHTML(w)}${w.brands.map(brandHTML).join("")}</div>
+</details>`;
+  }).join("")}</div>`;
+}
+
+async function loadWeeks() {
+  try {
+    const res = await fetch("updates/index.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error("updates/index.json: " + res.status);
+    const files = [...(await res.json()).weeks].sort().reverse();
+    const results = await Promise.allSettled(files.map(f =>
+      fetch("updates/" + f, { cache: "no-cache" })
+        .then(r => { if (!r.ok) throw new Error(f + ": " + r.status); return r.text(); })
+        .then(t => parseWeek(t, f.replace(/\.md$/, "")))));
+    results.filter(r => r.status === "rejected").forEach(r => console.warn("Skipped weekly update", r.reason));
+    WEEKS = results.filter(r => r.status === "fulfilled").map(r => r.value);
+  } catch (e) {
+    loadError = true;
+    console.error("Weekly updates failed to load", e);
+  }
+  renderThisWeek();
+  renderArchive();
+}
+
 const BRANDS = ["newage", "wilder", "rst"];
 const SECTIONS = ["dashboard", "updates", "current", "strategy", "timeline"];
 const drops = [...document.querySelectorAll(".drop")];
@@ -474,6 +579,7 @@ function showTab() {
 }
 window.addEventListener("hashchange", showTab);
 showTab();
+loadWeeks();
 </script>
 </body>
 </html>
