@@ -162,6 +162,7 @@ details[open] .chev { transform: rotate(-135deg); }
 .update-groups h4 { font-family: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif; font-size: 15px; margin: 0 0 6px; }
 .update-groups ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; }
 .update-groups li { margin-bottom: 4px; }
+.update-groups ul ul { margin-top: 4px; }
 .week-brand a, .week-intro a { color: var(--fast); }
 .week-intro { color: var(--muted); margin: 14px 0 0; }
 #archive { margin-top: 36px; }
@@ -444,18 +445,25 @@ function parseWeek(text, date) {
     }
     if ((m = line.match(/^##\s+(.+)/))) { brand = { name: m[1].trim(), groups: [] }; group = null; week.brands.push(brand); return; }
     if (/^#\s/.test(line)) return; // page title; the date comes from the file name
-    const item = line.replace(/^[-*]\s+/, "");
-    if (!brand) { week.intro.push(item); return; }
-    if (!group) { group = { title: "", items: [] }; brand.groups.push(group); }
-    group.items.push(item);
+    const isBullet = /^[-*]\s+/.test(line), text = line.replace(/^[-*]\s+/, "");
+    if (!brand) { week.intro.push(text); return; }
+    if (!group) { group = { title: "", items: [], stack: [] }; brand.groups.push(group); }
+    // Indent sub-bullets by 2 spaces per level to nest them under the bullet above
+    const level = isBullet ? Math.floor(raw.match(/^\s*/)[0].replace(/\t/g, "  ").length / 2) : 0;
+    const node = { text, children: [] }, stack = group.stack || (group.stack = []);
+    while (stack.length && stack[stack.length - 1].level >= level) stack.pop();
+    (stack.length ? stack[stack.length - 1].node.children : group.items).push(node);
+    stack.push({ level, node });
   });
   week.brands.forEach(b => b.groups = b.groups.filter(g => g.items.length));
   return week;
 }
 
+const listHTML = items => `<ul>${items.map(i => `<li>${inline(i.text)}${i.children.length ? listHTML(i.children) : ""}</li>`).join("")}</ul>`;
+const isGeneral = b => b.name.toLowerCase() === "general";
 function brandHTML(b) {
   const body = b.groups.length
-    ? `<div class="update-groups">${b.groups.map(g => `<div>${g.title ? `<h4>${inline(g.title)}</h4>` : ""}<ul>${g.items.map(i => `<li>${inline(i)}</li>`).join("")}</ul></div>`).join("")}</div>`
+    ? `<div class="update-groups">${b.groups.map(g => `<div>${g.title ? `<h4>${inline(g.title)}</h4>` : ""}${listHTML(g.items)}</div>`).join("")}</div>`
     : `<div class="empty"><b>No updates this week</b></div>`;
   return `<section class="week-brand"><h3>${inline(b.name)}</h3>${body}</section>`;
 }
@@ -481,9 +489,9 @@ function renderArchive() {
   const past = WEEKS.slice(1);
   if (!past.length) { el.innerHTML = `<div class="empty"><b>No past weeks yet</b>When a new week is added, the previous one moves here automatically.</div>`; return; }
   el.innerHTML = `<div class="steps">${past.map((w, i) => {
-    const updated = w.brands.filter(b => b.groups.length).length;
+    const brands = w.brands.filter(b => !isGeneral(b)), updated = brands.filter(b => b.groups.length).length;
     return `<details${i === 0 ? " open" : ""}>
-  <summary><span class="n">${WEEKS.length - 1 - i}</span><span>Week of ${fmtDate(w.date)}</span><span class="dur">${updated} of ${w.brands.length} brands updated</span><span class="chev"></span></summary>
+  <summary><span class="n">${WEEKS.length - 1 - i}</span><span>Week of ${fmtDate(w.date)}</span><span class="dur">${updated} of ${brands.length} brands updated</span><span class="chev"></span></summary>
   <div class="week-body">${introHTML(w)}${w.brands.map(brandHTML).join("")}</div>
 </details>`;
   }).join("")}</div>`;
