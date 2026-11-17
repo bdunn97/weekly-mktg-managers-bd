@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "weekly-site-preview",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\bdunn.NEWAGE\\OneDrive - NewAge Products\\Desktop\\weekly-mktg-managers-bd\\.claude\\preview-server.ps1"],
+      "port": 8765
+    }
+  ]
+}
