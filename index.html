@@ -165,8 +165,8 @@ details[open] .chev { transform: rotate(-135deg); }
 .update-groups ul ul { margin-top: 4px; }
 .week-brand a, .week-intro a { color: var(--fast); }
 .week-intro { color: var(--muted); margin: 14px 0 0; }
-#archive { margin-top: 36px; }
-#archive .steps { margin-top: 0; }
+#archive .steps { margin-top: 0; border-top: 0; }
+#archive > .empty { margin-top: 14px; padding: 28px 24px; }
 .week-body { padding: 0 4px 24px 46px; }
 .week-body > :first-child { margin-top: 4px; }
 @media (max-width: 560px) { .week-body { padding-left: 4px; } }
@@ -206,13 +206,6 @@ details[open] .chev { transform: rotate(-135deg); }
     <p class="lede" id="dash-lede">Organic social and PR performance at a glance. These numbers fill in automatically once the reporting platforms are connected.</p>
     <nav class="brand-switch dash-filter" aria-label="Filter by brand"><a href="#dashboard" data-brand="all">All brands</a><a href="#dashboard/newage" data-brand="newage">NewAge Products</a><a href="#dashboard/wilder" data-brand="wilder">Wilder Home</a><a href="#dashboard/rst" data-brand="rst">RST</a></nav>
 
-    <section class="dash-group" aria-labelledby="this-week-h">
-      <div class="dash-head">
-        <div><h2 id="this-week-h">This week</h2><p id="this-week-date">Loading the latest update…</p></div>
-      </div>
-      <div id="this-week-body"></div>
-    </section>
-
     <section class="dash-group" aria-labelledby="dash-social-h">
       <div class="dash-head">
         <div><h2 id="dash-social-h">Organic social</h2><p>Source: Sprout Social</p></div>
@@ -236,8 +229,19 @@ details[open] .chev { transform: rotate(-135deg); }
 
   <div class="panel" id="updates" hidden>
     <h1>Updates</h1>
-    <p class="lede">Past weekly PR and social updates for each brand, newest first. This week's update is on the Dashboard.</p>
-    <div id="archive"></div>
+    <p class="lede">This week's PR and social news for each brand, with past weeks archived below.</p>
+    <section class="dash-group" aria-labelledby="this-week-h">
+      <div class="dash-head">
+        <div><h2 id="this-week-h">This week</h2><p id="this-week-date">Loading the latest update…</p></div>
+      </div>
+      <div id="this-week-body"></div>
+    </section>
+    <section class="dash-group" aria-labelledby="past-weeks-h">
+      <div class="dash-head">
+        <div><h2 id="past-weeks-h">Past weeks</h2><p>Newest first. Each week moves here when the next one is added.</p></div>
+      </div>
+      <div id="archive"></div>
+    </section>
   </div>
 
   <div class="panel" id="current" hidden>
@@ -425,8 +429,8 @@ render();
 // ---- Weekly updates ----
 // Each week is a Markdown file in updates/, listed in updates/index.json.
 // "## Brand" starts a brand, "### Heading" a group, "- item" a line in it.
-// The newest week shows on the Dashboard; every older week goes in the Updates archive.
-let WEEKS = null, loadError = false, dashBrand = "";
+// On the Updates tab, the newest week shows under "This week"; every older week goes under "Past weeks".
+let WEEKS = null, loadError = false;
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const inline = s => esc(s)
   .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
@@ -477,17 +481,14 @@ function renderThisWeek() {
   if (!WEEKS.length) { date.textContent = ""; body.innerHTML = `<div class="empty"><b>No weekly updates yet</b>The first weekly update will appear here.</div>`; return; }
   const w = WEEKS[0];
   date.textContent = "Week of " + fmtDate(w.date);
-  const brands = dashBrand
-    ? [w.brands.find(b => b.name.toLowerCase() === dashBrand.toLowerCase()) || { name: dashBrand, groups: [] }]
-    : w.brands;
-  body.innerHTML = (dashBrand ? "" : introHTML(w)) + brands.map(brandHTML).join("");
+  body.innerHTML = introHTML(w) + w.brands.map(brandHTML).join("");
 }
 
 function renderArchive() {
   const el = document.getElementById("archive");
   if (loadError) { el.innerHTML = LOAD_FAIL; return; }
   const past = WEEKS.slice(1);
-  if (!past.length) { el.innerHTML = `<div class="empty"><b>No past weeks yet</b>When a new week is added, the previous one moves here automatically.</div>`; return; }
+  if (!past.length) { el.innerHTML = `<div class="empty"><b>No past weeks yet</b>When next week's update is added, this week moves here automatically.</div>`; return; }
   el.innerHTML = `<div class="steps">${past.map((w, i) => {
     const brands = w.brands.filter(b => !isGeneral(b)), updated = brands.filter(b => b.groups.length).length;
     return `<details${i === 0 ? " open" : ""}>
@@ -565,8 +566,6 @@ function showTab() {
     document.querySelectorAll(".dash-filter a").forEach(a => a.dataset.brand === b ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"));
     const name = b === "all" ? "" : document.querySelector(`.dash-filter a[data-brand="${b}"]`).textContent;
     document.getElementById("dash-lede").textContent = (name ? `${name} organic social and PR performance at a glance.` : "Organic social and PR performance at a glance, across all brands.") + " These numbers fill in automatically once the reporting platforms are connected.";
-    dashBrand = name;
-    renderThisWeek();
   }
   document.querySelectorAll(".tabs > a").forEach(a => a.hash === "#" + section ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   drops.forEach(d => {

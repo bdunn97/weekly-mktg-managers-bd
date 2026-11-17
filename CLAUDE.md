@@ -21,8 +21,11 @@ updates/
 
 - No build step and nothing to install. Netlify serves the repo as is.
 - The page loads `updates/index.json` and the weekly files in the browser.
-- The **newest** file (by date in the name) shows on the Dashboard under "This week".
-- **Every older** file shows in the Updates tab as the archive, newest first, one expandable row per week.
+- Weekly updates live only on the **Updates tab**. The Dashboard is for performance numbers
+  (Sprout Social, PR platform), not weekly notes.
+- The **newest** file (by date in the name) shows at the top of the Updates tab under "This week".
+- **Every older** file shows below it under "Past weeks" (the archive), newest first, one
+  expandable row per week.
 - **Archiving is automatic.** Adding a newer file pushes the previous week into the archive.
   Never move, rename or edit past weeks unless asked.
 - Opening `index.html` by double-clicking won't load the updates (the browser blocks it).
@@ -58,9 +61,9 @@ Rules:
 - `## Brand name` = one brand section. The page shows exactly the brands in the file, in file
   order. A new brand is just a new `##` heading. Keep the order General (if any), NewAge Products,
   Wilder Home, RST, then any new brands.
-- `## General` is for cross-brand items. Include it only when the notes have some. It shows with
-  "All brands", is hidden when the Dashboard is filtered to one brand, and doesn't count toward
-  "x of y brands updated" in the archive.
+- `## General` is for cross-brand items (agencies, budget, team). The user's notes usually start
+  with a "General" section; keep it first. Include it only when the notes have some. It doesn't
+  count toward "x of y brands updated" in the archive.
 - List **every** brand each week. A brand with nothing under its heading shows
   "No updates this week". Don't write "None" or "N/A": leave it empty.
 - The three standard groups are `### Weekly highlights`, `### New partners signed`,
@@ -74,7 +77,6 @@ Rules:
 - Light cleanup only: fix spacing and punctuation, bold an option or label the notes already name.
   Keep names (Margaret, Bram, Bren...), figures and wording otherwise as written.
 - The date shown on the page comes from the file name, not the `#` title. Keep both in sync.
-- The Dashboard brand filter matches brand names exactly ("NewAge Products", "Wilder Home", "RST").
 - A brand whose notes say "No updates" gets an empty heading (it shows "No updates this week").
 
 ## Weekly routine
@@ -86,8 +88,8 @@ Rules:
    ask instead of guessing.
 3. Add the new file name to `updates/index.json`.
 4. Don't touch the previous week's file. It moves to the archive automatically.
-5. Check it in the local preview (`weekly-site-preview`): Dashboard shows the new week, the Updates tab
-   shows last week, and there are no console errors.
+5. Check it in the local preview (`weekly-site-preview`): the Updates tab shows the new week under
+   "This week", last week under "Past weeks", and there are no console errors.
 6. Show the user a short summary of what went in. Commit (`Weekly update: YYYY-MM-DD`) and push
    when they approve. Use a branch + pull request if they want a Netlify deploy preview first.
 
