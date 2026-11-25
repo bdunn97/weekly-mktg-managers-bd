@@ -88,6 +88,25 @@ Rules:
 - Supported formatting: `- ` bullets, nested bullets (indent 2 spaces per level),
   `[text](https://url)` links, `**bold**`. Nothing else. The user's notes often come from Word/
   OneNote with •, o, ▪ markers: convert each marker level to a nesting level.
+- **Images / sliders:** when the user attaches photos (e.g. "add slider of attached images"),
+  copy them to `updates/images/<meeting date>/` with short descriptive names
+  (`1-set-closed.webp`, ...), in the order given. Add each one as a sub-bullet
+  `- ![short alt text](images/<meeting date>/<file>)` under the bullet it belongs to (paths are
+  relative to `updates/`). Two or more images under the same bullet show as a slider with
+  ‹ › buttons; one shows as a single image. Keep each photo under ~500 KB (webp/jpg).
+  Don't put the instruction text ("ADD SLIDER...") on the page.
+- **Link previews:** for "add a link with a preview", put the link in the bullet text and add a
+  clickable screenshot as a sub-bullet: `- [![alt](images/<date>/<name>.jpg)](https://site)`.
+  It shows after that bullet's sub-points, with an "Open site ↗" link. Capture the screenshot
+  with headless Edge (`msedge --headless=new --window-size=1440,1080 --screenshot=<file> <url>`,
+  with a scratch `--user-data-dir`), then crop it to the one part that shows what the site is
+  (the user found a full-page screenshot messy; for the WH site they wanted only the first row of
+  ad videos) and save it as a JPEG about 1200px wide (~100 KB).
+- Sizes: photo sliders are capped at 440px wide and link previews at 560px (in `index.html`);
+  the user asked for them to be smaller than full width.
+- The user's other site, the Wilder Home Creator Content Strategy hub (including the competitor
+  Ad Library), is https://bdunn97.github.io/content-strategy-hub-wh/ (repo
+  `bdunn97/content-strategy-hub-wh`).
 - Light cleanup only: fix spacing and punctuation, bold an option or label the notes already name.
   Keep names (Margaret, Bram, Bren...), figures and wording otherwise as written.
 - The date shown on the page comes from the file name, not the `#` title. Keep both in sync.

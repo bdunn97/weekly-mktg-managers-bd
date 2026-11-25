@@ -162,7 +162,22 @@ details[open] .chev { transform: rotate(-135deg); }
 .update-groups h4 { font-family: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif; font-size: 15px; margin: 0 0 6px; }
 .update-groups ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; }
 .update-groups li { margin-bottom: 4px; }
+.update-groups li.slider-item { list-style: none; }
 .update-groups ul ul { margin-top: 4px; }
+.slider { margin: 12px 0 8px; max-width: 440px; }
+.slider.link-preview { max-width: 560px; }
+.slides { display: flex; align-items: flex-start; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); scrollbar-width: none; }
+.slides::-webkit-scrollbar { display: none; }
+.slide { flex: 0 0 100%; margin: 0; scroll-snap-align: start; }
+.slide img { display: block; width: 100%; height: auto; }
+.slider-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 10px; }
+.slider-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 20px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.slider-btn:hover { border-color: var(--fast); color: var(--fast); }
+.slider-btn:focus-visible { outline: 3px solid var(--fast); outline-offset: 2px; }
+.slider-count { min-width: 56px; text-align: center; font-size: 13px; color: var(--muted); }
+.slide a { display: block; }
+.slide a:focus-visible { outline: 3px solid var(--fast); outline-offset: -3px; }
+.slider-open { display: inline-block; margin-top: 8px; font-size: 14px; font-weight: 600; }
 .week-brand a, .week-intro a { color: var(--fast); }
 .week-intro { color: var(--muted); margin: 14px 0 0; }
 #archive .steps { margin-top: 0; border-top: 0; }
@@ -463,7 +478,46 @@ function parseWeek(text, date) {
   return week;
 }
 
-const listHTML = items => `<ul>${items.map(i => `<li>${inline(i.text)}${i.children.length ? listHTML(i.children) : ""}</li>`).join("")}</ul>`;
+// A bullet written as ![alt text](images/...) is an image (path relative to updates/).
+// [![alt text](images/...)](https://site) is a clickable preview image that opens that site.
+// Images nested under the same bullet show as one slider below that bullet's text.
+const IMG = /^(?:\[)?!\[([^\]]*)\]\(([^)\s]+)\)(?:\]\((https?:\/\/[^\s)]+)\))?$/;
+const imgSrc = s => /^https?:\/\//.test(s) ? s : "updates/" + s.replace(/^\.?\//, "");
+const slideHTML = m => {
+  const img = `<img src="${esc(imgSrc(m[2]))}" alt="${esc(m[1])}" loading="lazy">`;
+  return `<figure class="slide">${m[3] ? `<a href="${esc(m[3])}" target="_blank" rel="noopener">${img}</a>` : img}</figure>`;
+};
+const sliderHTML = imgs => `<div class="slider${imgs.length === 1 && imgs[0][3] ? " link-preview" : ""}">
+  <div class="slides">${imgs.map(slideHTML).join("")}</div>
+  ${imgs.length === 1 && imgs[0][3] ? `<a class="slider-open" href="${esc(imgs[0][3])}" target="_blank" rel="noopener">Open site ↗</a>` : ""}
+  ${imgs.length > 1 ? `<div class="slider-nav"><button type="button" class="slider-btn" data-dir="-1" aria-label="Previous image">‹</button><span class="slider-count" aria-live="polite">1 / ${imgs.length}</span><button type="button" class="slider-btn" data-dir="1" aria-label="Next image">›</button></div>` : ""}
+</div>`;
+function listHTML(items) {
+  const html = [], imgs = [];
+  const flush = () => { if (imgs.length) { html.push(`<li class="slider-item">${sliderHTML(imgs.splice(0))}</li>`); } };
+  items.forEach(i => {
+    const m = i.text.match(IMG);
+    if (m) { imgs.push(m); return; }
+    flush();
+    const kidImgs = i.children.map(c => c.text.match(IMG)).filter(Boolean);
+    const kids = i.children.filter(c => !IMG.test(c.text));
+    html.push(`<li>${inline(i.text)}${kids.length ? listHTML(kids) : ""}${kidImgs.length ? sliderHTML(kidImgs) : ""}</li>`);
+  });
+  flush();
+  return `<ul>${html.join("")}</ul>`;
+}
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".slider-btn");
+  if (!btn) return;
+  const slides = btn.closest(".slider").querySelector(".slides");
+  slides.scrollBy({ left: Number(btn.dataset.dir) * slides.clientWidth });
+});
+document.addEventListener("scroll", e => {
+  const slides = e.target;
+  if (!(slides instanceof Element) || !slides.classList.contains("slides")) return;
+  const count = slides.parentElement.querySelector(".slider-count");
+  if (count) count.textContent = `${Math.round(slides.scrollLeft / slides.clientWidth) + 1} / ${slides.children.length}`;
+}, true);
 const isGeneral = b => b.name.toLowerCase() === "general";
 function brandHTML(b) {
   const body = b.groups.length
