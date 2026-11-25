@@ -1,9 +1,23 @@
 # CLAUDE.md: PR & Social weekly site
 
 ## What this is
-A single-page internal site ("PR & Social") for the weekly marketing managers update, hosted on
-Netlify and deployed from this GitHub repo. Tabs: Dashboard, Updates, Current Partnerships ▾,
-Strategy ▾, Partnership Timeline. Brands today: NewAge Products, Wilder Home, RST.
+A single-page site ("PR & Social") for the weekly marketing managers update, deployed from this
+GitHub repo. Tabs: Dashboard, Updates, Current Partnerships ▾, Strategy ▾, Partnership Timeline.
+Brands today: NewAge Products, Wilder Home, RST.
+
+## Hosting
+- **GitHub Pages (current):** https://bdunn97.github.io/weekly-mktg-managers-bd/ publishes from
+  `main` / root on every push, usually within a minute or two. Set up 2026-11-25 because Netlify
+  credits ran out.
+- **Netlify:** https://weekly-mktg-managers-bd.netlify.app also deploys from `main`, but its builds
+  fail until the Netlify billing cycle resets. Netlify deploy previews for pull requests don't
+  work until then either; review changes in the local preview instead.
+- **Everything is public.** The repo is public (required for free GitHub Pages) and the Pages site
+  has no password. Anyone with the link can read the weekly notes and the repo history. Remind the
+  user of this if notes include anything sensitive (pricing, contracts, unannounced launches).
+- GitHub Pages runs Jekyll, which skips dot-folders, so `.claude/` is not published. Don't add a
+  `.nojekyll` file (it would publish `.claude/`). The weekly `.md` files have no front matter, so
+  Jekyll serves them as plain files, which is what the page needs. Don't add front matter to them.
 
 ## Structure
 ```
@@ -19,7 +33,7 @@ updates/
   preview-server.ps1    The tiny server behind it
 ```
 
-- No build step and nothing to install. Netlify serves the repo as is.
+- No build step and nothing to install. GitHub Pages (and Netlify) serve the repo as is.
 - The page loads `updates/index.json` and the weekly files in the browser.
 - Weekly updates live only on the **Updates tab**. The Dashboard is for performance numbers
   (Sprout Social, PR platform), not weekly notes.
@@ -29,7 +43,7 @@ updates/
 - **Archiving is automatic.** Adding a newer file pushes the previous week into the archive.
   Never move, rename or edit past weeks unless asked.
 - Opening `index.html` by double-clicking won't load the updates (the browser blocks it).
-  Use Netlify or the local preview.
+  Use the hosted site or the local preview.
 
 ## Weekly file format
 ```markdown
@@ -91,7 +105,7 @@ Rules:
 5. Check it in the local preview (`weekly-site-preview`): the Updates tab shows the new week under
    "This week", last week under "Past weeks", and there are no console errors.
 6. Show the user a short summary of what went in. Commit (`Weekly update: YYYY-MM-DD`) and push
-   when they approve. Use a branch + pull request if they want a Netlify deploy preview first.
+   to `main` when they approve. Then confirm the GitHub Pages site shows the new week.
 
 ## Don't
 - Don't change colors, fonts, layout or the timeline data during a weekly update.
